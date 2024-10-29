@@ -8,25 +8,21 @@ const JWT_EXPIRES_IN = '1h';
 
 // Registro de usuario
 
-async function register(req, res){
+async function register(req, res) {
     const { email, password } = req.body;
 
     try {
-        // Verificar si el usuario ya existe
-        const existingUser = await User.findOne({email});
-        if(existingUser){
-            return res.status(400).json({code: 400, message: 'El usuario ya existe'});
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ code: 400, message: 'El usuario ya existe' });
         }
-        // Encriptar contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        //Crear y guardar el nuevo usuario
-        const newUser = new User({email, password: hashedPassword});
+        const newUser = new User({ email, password: hashedPassword });
         await newUser.save();
-        res.status(201).json({code: 201, message: 'Usuario creado', user});
-    }catch {
+        res.status(201).json({ code: 201, message: 'Usuario creado', user: newUser });
+    } catch (error) {
         console.error('Error al registrar usuario:', error);
-        res.status(500).json({code: 500, message: 'Error al registrar usuario'});
+        res.status(500).json({ code: 500, message: 'Error al registrar usuario' });
     }
 }
 
@@ -43,7 +39,7 @@ async function login(req, res){
         }
 
         //Verificar contraseña
-        const isPasswordValid = await user.compare(password);
+        const isPasswordValid = await user.comparePassword(password);
         if(!isPasswordValid){
             return res.status(400).json({code: 400, message: 'Contraseña incorrecta'});
         }
